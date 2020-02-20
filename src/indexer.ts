@@ -18,7 +18,7 @@ export class SystemVerilogIndexer {
 
     public NUM_FILES: number = 250;
     public parallelProcessing: number;
-    public systemVerilogFileExtensions = ["sv", "v", "svh", "vh"];
+    public systemVerilogFileExtensions = ["vhd", "vhdl", "vho"];
     public globPattern: string = "**/*.{" + this.systemVerilogFileExtensions.join(",") + "}";
     public exclude: GlobPattern = undefined;
     public forceFastIndexing: Boolean = false;
@@ -69,6 +69,7 @@ export class SystemVerilogIndexer {
             this.symbols = new Map<string, Array<SystemVerilogSymbol>>();
             let uris = await Promise.resolve(workspace.findFiles(this.globPattern, exclude, undefined, token));
             console.time('build_index');
+            console.log(uris.length);
             for (var filenr = 0; filenr < uris.length; filenr += this.parallelProcessing) {
                 let subset = uris.slice(filenr, filenr + this.parallelProcessing)
                 if (token.isCancellationRequested) {

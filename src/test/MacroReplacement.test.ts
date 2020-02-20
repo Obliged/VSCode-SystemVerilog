@@ -24,7 +24,7 @@ import * as assert from 'assert';
 import { ANTLRBackend } from '../compiling/ANTLRBackend';
 import { getPathFromUri } from '../utils/common';
 import { beforeEach } from 'mocha'
-import { Select_expressionContext } from '../compiling/ANTLR/grammar/build/SystemVerilogParser';
+import { Select_expressionContext } from '../compiling/ANTLR/grammar/build/src/compiling/ANTLR/grammar/SystemVerilogParser';
 import { TransportKind, TextDocumentIdentifier } from 'vscode-languageclient';
 import { Duplex } from 'stream';
 

@@ -1,17 +1,16 @@
 {
-    "name": "systemverilog",
-    "displayName": "SystemVerilog - Language Support",
-    "description": "Language support for Verilog / SystemVerilog",
-    "version": "0.9.5",
-    "publisher": "eirikpre",
+    "name": "vhdl",
+    "displayName": "VHDL - Language Support",
+    "description": "Language support for VHDL",
+    "version": "0.1.0",
+    "publisher": "Obliged",
     "author": {
-        "name": "Eirik Prestegårdshus",
-        "email": "eirikpre@gmail.com"
+        "name": "Henrik Solvang",
+        "email": "FIXME@gmail.com"
     },
     "license": "MIT",
     "keywords": [
-        "verilog",
-        "systemverilog",
+        "vhdl",
         "syntax",
         "highlighting",
         "hdl"
@@ -23,7 +22,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/eirikpre/VSCode-SystemVerilog"
+        "url": "https://github.com/Obliged/VSCode-SystemVerilog"
     },
     "engines": {
         "vscode": "^1.41.0"
@@ -33,9 +32,8 @@
     ],
     "main": "./out/extension.js",
     "activationEvents": [
-        "onLanguage:systemverilog",
-        "onLanguage:verilog",
-        "workspaceContains:**/*.{sv,v}"
+        "onLanguage:vhdl",
+        "workspaceContains:**/*.{vhd,vhdl}"
     ],
     "contributes": {
         "configuration": [
@@ -116,50 +114,28 @@
         ],
         "languages": [
             {
-                "id": "systemverilog",
+                "id": "vhdl",
                 "aliases": [
-                    "SystemVerilog",
-                    "systemverilog",
-                    "System Verilog",
-                    "Systemverilog"
+                    "VHDL",
+                    "Vhdl",
+                    "vhdl"
                 ],
                 "extensions": [
-                    ".sv",
-                    ".svh"
-                ],
-                "configuration": "./language-configuration.json"
-            },
-            {
-                "id": "verilog",
-                "aliases": [
-                    "Verilog",
-                    "verilog"
-                ],
-                "extensions": [
-                    ".v",
-                    ".vh"
+                    ".vhd",
+                    ".vhdl"
                 ],
                 "configuration": "./language-configuration.json"
             }
         ],
         "snippets": [
             {
-                "language": "systemverilog",
-                "path": "./snippets/systemverilog.json"
-            },
-            {
-                "language": "verilog",
+                "language": "vhdl",
                 "path": "./snippets/systemverilog.json"
             }
         ],
         "grammars": [
             {
-                "language": "systemverilog",
-                "scopeName": "text.systemverilog",
-                "path": "./syntaxes/systemverilog.tmLanguage.json"
-            },
-            {
-                "language": "verilog",
+                "language": "vhdl",
                 "scopeName": "text.systemverilog",
                 "path": "./syntaxes/systemverilog.tmLanguage.json"
             }

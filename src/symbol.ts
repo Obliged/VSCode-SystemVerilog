@@ -22,40 +22,41 @@ export class SystemVerilogSymbol extends SymbolInformation {
 export function getSymbolKind(name: string): SymbolKind {
     if (name === undefined || name === '') { // Ports may be declared without type
         return SymbolKind.Variable;
-    } else if (name.indexOf('[') != -1) {
+    } else if (name.indexOf('(') != -1) {
         return  SymbolKind.Array;
     }
     switch (name) {
-        case 'parameter':
-        case 'localparam': return SymbolKind.Constant;
+        case 'constant': return SymbolKind.Constant;
+        case 'library':
+        case 'package body':
         case 'package':
-        case 'program':
-        case 'import': return SymbolKind.Package;
+        case 'use': return SymbolKind.Package;
         case 'begin': // Labels
         case 'string': return SymbolKind.String;
-        case 'class': return SymbolKind.Class;
-        case 'task': return SymbolKind.Method;
+        case 'procedure': return SymbolKind.Method;
         case 'function': return SymbolKind.Function;
-        case 'interface': return SymbolKind.Interface;
         case 'assert':
-        case 'event': return SymbolKind.Event;
-        case 'struct': return SymbolKind.Struct;
-        case 'typedef': return SymbolKind.TypeParameter;
-        case 'genvar': return SymbolKind.Operator;
-        case 'enum': return SymbolKind.Enum;
-        case 'modport': return SymbolKind.Null;
-        case 'define':
-        case 'property': return SymbolKind.Property;
-        case 'wire':
-        case 'reg':
+        case 'record': return SymbolKind.Struct;
+        case 'type': return SymbolKind.TypeParameter;
+        case 'subtype': return SymbolKind.TypeParameter;
+        case 'array': return SymbolKind.Array;
+        case 'unsigned':
+        case 'signed':
         case 'bit':
-        case 'logic':
-        case 'int':
+        case 'bit_vector':
+        case 'std_logic':
+        case 'std_logic_vector':
+        case 'std_ulogic':
+        case 'std_ulogic_vector':
         case 'integer':
-        case 'char':
+        case 'integer_vector':
         case 'time':
-        case 'float': return SymbolKind.Variable;
-        case 'module':
+        case 'time_vector':
+        case 'boolean':
+        case 'boolean_vector':
+        case 'real':
+        case 'real_vector': return SymbolKind.Variable;
+        case 'entity':
         default: return SymbolKind.Field;
     }
     /* Unused/Free SymbolKind icons
@@ -63,6 +64,6 @@ export function getSymbolKind(name: string): SymbolKind {
         return SymbolKind.Enum;
         return SymbolKind.EnumMember;
         return SymbolKind.Operator;
-        return SymbolKind.Array;
+        
     */
 }

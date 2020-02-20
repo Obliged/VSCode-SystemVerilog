@@ -44,10 +44,7 @@ export function activate(context: ExtensionContext) {
 
   const selector: DocumentSelector = [{
     scheme: 'file',
-    language: 'systemverilog'
-  }, {
-    scheme: 'file',
-    language: 'verilog'
+    language: 'vhdl'
   }];
 
   //Output Channel
@@ -160,8 +157,8 @@ export function activate(context: ExtensionContext) {
 
   // Create the language client and start the client.
   client = new LanguageClient(
-    'systemverilog',
-    'System Verilog Language Server',
+    'vhdl',
+    'VHDL Language Server',
     serverOptions,
     clientOptions
   );

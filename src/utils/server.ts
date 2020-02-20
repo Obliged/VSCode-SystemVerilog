@@ -15,7 +15,7 @@ export function isSystemVerilogDocument(document: TextDocument): boolean {
         return false;
     }
 
-    if (document.languageId === "systemverilog") {
+    if (document.languageId === "vhdl") { //FIXME
         return true;
     }
 
@@ -33,7 +33,25 @@ export function isVerilogDocument(document: TextDocument): boolean {
         return false;
     }
 
-    if (document.languageId === "verilog") {
+    if (document.languageId === "vhdl") { //FIXME
+        return true;
+    }
+
+    return false;
+}
+
+/**
+    Check if a given `document` is a Vhdl file.
+
+    @param document the document to check
+    @return true if the document is a Verilog file
+*/
+export function isVhdlDocument(document: TextDocument): boolean {
+    if (!document) {
+        return false;
+    }
+
+    if (document.languageId === "vhdl") {
         return true;
     }
 

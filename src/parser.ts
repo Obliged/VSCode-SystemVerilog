@@ -3,137 +3,114 @@ import { SystemVerilogSymbol } from "./symbol";
 
 
 export class SystemVerilogParser {
-    private illegalMatches = /(?!return|begin|end|else|join|fork|for|if|virtual|static|automatic|generate|assign|initial|assert|disable)/
+    private illegalMatches = /(?!return|begin|end|else|for|if|generate|assert)/
     private comment = /(?:\/\/.*$)?/
 
     private r_decl_block: RegExp = new RegExp([
         "(?<=^\\s*",
-        /(?<type>module|program|interface|package|primitive|config|property)\s+/,
-        // Mask automatic
-        /(?:automatic\s+)?/,
+        /(?<type>entity|architecture|package|package body|configuration)\s+/,
         ")",
-        /(?<name>\w+)/,
-        /(?<params>\s*#\s*\([\w\W]*?\))?/,
-        /(?<ports>\s*\([\W\w]*?\))?/,
+        /((?<arch>\w+)\s+of\s+)?/,
+        /(?<name>\w+)\s+/,
+        /(?=is)\s+/, 
+        /(?<params>generic\s*\([\w\W]*?\))?/,
+        /(?<ports>\s*port\s*\([\W\w]*?\))?/,
         /\s*;/,
         /(?<body>[\W\w]*?)/,
-        /(?<end>end\1)/,
-    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mg');
-
-    private r_decl_class: RegExp = new RegExp([
-        "(?<=^\\s*(virtual\\s+)?",
-        /(?<type>class)\s+/,
-        ")",
-        /(?<name>\w+)/,
-        /(\s+(extends|implements)\s+[\w\W]+?|\s*#\s*\([\w\W]+?\))*?/,
-        /\s*;/,
-        /(?<body>[\w\W]*?)/,
-        /(?<end>endclass)/
-    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mg');
+        /(?<end>end \1)/,
+    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mgi');
 
     private r_decl_method: RegExp = new RegExp([
-        "(?<=^\\s*(virtual|local|extern|pure\\s+virtual)?\\s*",
-        /(?<type>(function|task))\s+/,
-        /(?<return>[\w:\[\]\s*]+\s*)?/,
-        ")",
+        "(?<=^\\s*(impure|pure)?\\s*",
+        /(?<type>(function|procedure))\s+/,
         /\b(?<name>[\w\.]+)\b\s*/,
+        ")",
         /(?<ports>\([\W\w]*?\))?/,
-        /\s*;/,
+        /(?<return>[\w(?:(down)?to)\s*]+\s*)?/,
+        /\s*is/,
         /(?<body>[\w\W]*?)/,
-        /(?<end>end(function|task))/
-    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mg');
+        /(?<end>end (function|task))/
+    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mgi');
 
     private r_typedef: RegExp = new RegExp([
         /(?<=^\s*)/,
-        /(?<type>typedef)\s+/,
+        /(?<type>type)\s+/,
         /(?<body>[^;]*)/,
         /(?<name>\b\w+)/,
         /\s*(\[[^;]*?\])*?/,
         /\s*(?<end>;)/
-    ].map(x => x.source).join(''), 'mg');
+    ].map(x => x.source).join(''), 'mgi');
 
     private r_instantiation: RegExp = new RegExp([
         "(?<=^\\s*",
-        /(?:(?<modifier>virtual|static|automatic|rand|randc|pure virtual)\s+)?/,
         // Symbol type, ignore packed array
         this.illegalMatches,
         /\b(?<type>[:\w]+(?:\s*\[[^\]]*?\])*?)\s*/,
+        // Symbol name
+        /\b(?<name>\w+)\s*/,
         this.comment,
-        /(?<params>#\s*\([\w\W]*?\))?\s*/,
+        /(?<params>generic\s+map\s*\([\w\W]*?\))?\s*/,
         // Allow multiple declaration
         /(\b\w+\s*,\s*)*?/,
         ")",
         this.illegalMatches,
-        // Symbol name
-        /\b(?<name>\w+)\s*/,
-        // Unpacked array | Ports
-        /(?:(\[[^\]]*?\]\s*)*?|(\([\w\W]*?\))?)\s*/,
-        /\s*(?<end>;|,|=)/
-    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mg');
+        // Ports
+        /(?:port\s+map\s*(\([\w\W]*?\))?)\s*/,
+        /\s*(?<end>;|,)/
+    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mgi');
     
     private r_assert: RegExp = new RegExp([
         /(?<=^\s*(?<name>\w+)\s*:\s*)/,
         /(?<type>assert\b)/
-    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mg');
+    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mgi');
 
-    private r_define: RegExp = new RegExp([
-        /(?<=^\s*)/,
-        /`(?<type>define)\s+/,
-        /(?<name>\w+)\b/,
-        /((?<ports>\([^\n]*\))|\s*?)/,
-        /(?<body>([^\n]*\\\n)*([^\n]*))/,
-        /(?<!\\)(?=\n)/
-    ].map(x => x.source).join(''), 'mg');
-
-    private r_label: RegExp = new RegExp([
-        /\b(?<type>begin)\b/,
-        /\s*:\s*/,
-        /(?<name>\w+)\s*(?:\/\/.*)?$/,
-        // Matches up to 5 nested begin/ends
-        // This is the only way to do it with RegExp without balancing groups
-        /(?<body>(?:\bbegin\b(?:\bbegin\b(?:\bbegin\b(?:\bbegin\b(?:\bbegin\b[\w\W]+?\bend\b|[\w\W])+?\bend\b|[\w\W])+?\bend\b|[\w\W])+?\bend\b|[\w\W])+?\bend\b|[\w\W])+?)/,
-        /\bend\b(\s*:\s*\1)?/
-    ].map(x => x.source).join(''), 'mg');
+    // private r_label: RegExp = new RegExp([
+    //     /\b(?<type>begin)\b/,
+    //     /\s*:\s*/,
+    //     /(?<name>\w+)\s*(?:\/\/.*)?$/,
+    //     // Matches up to 5 nested begin/ends
+    //     // This is the only way to do it with RegExp without balancing groups
+    //     /(?<body>(?:\bbegin\b(?:\bbegin\b(?:\bbegin\b(?:\bbegin\b(?:\bbegin\b[\w\W]+?\bend\b|[\w\W])+?\bend\b|[\w\W])+?\bend\b|[\w\W])+?\bend\b|[\w\W])+?\bend\b|[\w\W])+?)/,
+    //     /\bend\b(\s*:\s*\1)?/
+    // ].map(x => x.source).join(''), 'mgi');
 
     private r_ports: RegExp = new RegExp([
-        /(?<!^(?:\/\/|`|\n).*?)/,
+        /(?<!^(?:--|\n).*?)/,
         "(?<=",
-        /(?:\b(?:input|output|inout)\b)\s*/,
-        /(?<type>(?:`?\w+)?\s*(\[.*?\])*?)?\s*/,
+        /(?<name>\b\w+\b)/,
+        /(?:\s*:\s*)/,
+        /(?:\b(?:in|out|inout|buffer|linkage)\b)\s*/,
+        /(?<type>(?:\w+)?\s*(\[.*?\])*?)?\s*/,
         // Allow multiple declaration
         /(\b\w+\s*,\s*)*?/,
         ")",
-        /(?<name>\b\w+\b)/,
         // Has to be followed by , or )
-        /(?=\s*((\[.*?\]\s*)*?|\/\/[^\n]*\s*)(?:,|\)))/
-    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mg');
+        /(?=\s*((\[.*?\]\s*)*?|\/\/[^\n]*\s*)(?:;|\)))/
+    ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mgi');
 
     private r_block_fast = new RegExp([
-        , /(?<=^\s*(?:virtual\s+)?)/
-        , /(?<type>module|class|interface|package|program)\s+/
-        , /(?:automatic\s+)?/
-        , /(?<name>\w+)/
+        , /(?<=^\s*)/
+        , /(?<type>entity|architecture|package body|package)\s+/
+        , /((?<arch>\w+)\s+of\s+)?/
+        , /(?<name>\w+)\s+/
+        , /is\s+/
         , /[\w\W.]*?/
-        , /(end\1)/
-    ].map(x => x.source).join(''), 'mg');
+        , /(end \1)/
+    ].map(x => x.source).join(''), 'mgi');
 
     public readonly full_parse = [
         this.r_decl_block,
-        this.r_decl_class,
         this.r_decl_method,
         this.r_typedef,
-        this.r_define,
-        this.r_label,
+        // this.r_label,
         this.r_instantiation,
         this.r_assert
     ];
 
     public readonly declaration_parse = [
         this.r_decl_block,
-        this.r_decl_class,
         this.r_decl_method,
         this.r_typedef,
-        this.r_define
     ];
 
     public readonly fast_parse = [
@@ -160,7 +137,6 @@ export class SystemVerilogParser {
         }
 
         let regexes = this.translate_precision(precision);
-
         // Find blocks
         for (let i = 0; i < regexes.length; i++) {
             while(1) {

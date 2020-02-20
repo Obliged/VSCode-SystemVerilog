@@ -1,5 +1,5 @@
 
-import {SystemVerilogListener} from './grammar/build/SystemVerilogListener';
+import {SystemVerilogListener} from './grammar/build/src/compiling/ANTLR/grammar/SystemVerilogListener';
 import {Recognizer, RecognitionException, ANTLRErrorListener} from 'antlr4ts'
 
 /**
