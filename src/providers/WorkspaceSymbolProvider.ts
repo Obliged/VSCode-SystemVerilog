@@ -65,7 +65,7 @@ export class SystemVerilogWorkspaceSymbolProvider implements WorkspaceSymbolProv
             let symbolInfo = undefined;
             this.indexer.symbols.forEach(list => {
                 list.forEach(symbol => {
-                    if (symbol.name == query && symbol.kind == getSymbolKind("module")) {
+                    if (symbol.name == query && symbol.kind == getSymbolKind("entity")) {
                         symbolInfo = symbol;
                         return false;
                     }

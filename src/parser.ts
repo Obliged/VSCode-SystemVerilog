@@ -4,7 +4,7 @@ import { SystemVerilogSymbol } from "./symbol";
 
 export class SystemVerilogParser {
     private illegalMatches = /(?!return|begin|end|else|for|if|generate|assert)/
-    private comment = /(?:\/\/.*$)?/
+    private comment = /(?:\-\-.*$)?/
 
     private r_decl_block: RegExp = new RegExp([
         "(?<=^\\s*",
@@ -29,7 +29,7 @@ export class SystemVerilogParser {
         /(?<return>[\w(?:(down)?to)\s*]+\s*)?/,
         /\s*is/,
         /(?<body>[\w\W]*?)/,
-        /(?<end>end (function|task))/
+        /(?<end>end (function|procedure))/
     ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mgi');
 
     private r_typedef: RegExp = new RegExp([

@@ -7,8 +7,8 @@ export class SystemVerilogDefinitionProvider implements DefinitionProvider {
 
     // Strings used in regex'es
     // private regex_module = '$\\s*word\\s*(';
-    private regex_port = '\\.word\\s*\\(';
-    private regex_package = '\\b(\\w+)\\s*::\\s*(word)';
+    private regex_port = '\\bword\\s*=>\\s*';
+    private regex_package = '\\b(\\w+)\\s*\\.\\s*(word)';
 
     constructor(workspaceSymProvider: SystemVerilogWorkspaceSymbolProvider) {
         this.workspaceSymProvider = workspaceSymProvider;
@@ -16,22 +16,23 @@ export class SystemVerilogDefinitionProvider implements DefinitionProvider {
 
     public provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Promise<Definition> {
         return new Promise ( async (resolve, reject) => {
-            let range = document.getWordRangeAtPosition(position);
+            let range = document.getWordRangeAtPosition(position, /\w+/);
             let line = document.lineAt(position.line).text;
             let word = document.getText(range);
-
+            console.debug("the word was: " + word);
+            console.debug("the line is: " + word);
             // Check for port
             let match_port = line.match(this.regex_port.replace('word', word));
-            let match_package = line.match(this.regex_package.replace('word', word));
-
+            let match_package = null;//line.match(this.regex_package.replace('word', word));
+            if (match_port) {console.debug("hell yeah i found a port and the index is " + match_port.index.toString())}
+            console.debug("whatever this thing is it is " + range.start.character.toString());
             if (!range) {
                 reject();
             }
-
             // Port
-            else if (match_port && match_port.index === range.start.character-1) {
+            else if (match_port && match_port.index === range.start.character) {
+                console.debug("getting this bitch based on ports");
                 let container = moduleFromPort(document, range)
-
                 resolve(Promise.resolve(this.workspaceSymProvider.provideWorkspaceSymbols(container, token, true).then( res => {
                     return Promise.all( res.map(x => findPortLocation(x, word)));
                 }).then( arrWithUndefined => {
@@ -85,6 +86,7 @@ export class SystemVerilogDefinitionProvider implements DefinitionProvider {
 
 // Retrieves locations from the hierarchical DocumentSymbols
 function getDocumentSymbols(results: Location[], entries, word: string, uri: Uri, containerName?: string): void {
+    if (entries == null){throw "no entries"}
     for (let entry of entries) {
         if (entry.name === word) {
             if (containerName) {
@@ -119,12 +121,12 @@ export function moduleFromPort(document, range): string {
             depthParathesis--;
         
         if (depthParathesis == -1) {
-            let match_param = text.slice(0, i).match(/(\w+)\s*#\s*$/);
-            let match_simple = text.slice(0, i).match(/(\w+)\s+(\w+)\s*$/);
+            let match_param = text.slice(0, i).match(/(\w+)\s*generic\s+map\s*$/);
+            let match_port = text.slice(0, i).match(/(\w+)\s*port\s+map\s*$/);            
             if (match_param)
                 return match_param[1]
-            else if (match_simple)
-                return match_simple[1]
+            else if (match_port)
+                return match_port[1]
         }
     }
 }

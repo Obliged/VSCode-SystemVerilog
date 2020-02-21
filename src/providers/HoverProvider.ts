@@ -18,7 +18,7 @@ export class SystemVerilogHoverProvider implements HoverProvider {
                     });
                 }).then((str: string): Hover => {
                     return new Hover([{
-                            language: 'systemverilog',
+                            language: 'vhdl',
                             value: str
                         }
                     ]);

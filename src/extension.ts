@@ -104,7 +104,7 @@ export function activate(context: ExtensionContext) {
     closeWindowProgress = false;
     Promise.resolve(window.withProgress({
       location: ProgressLocation.Notification,
-      title: "SystemVerilog Document compiling...",
+      title: "VHDL Document compiling...",
       cancellable: true
     }, async (_progress, token) => {
       client.sendNotification("compileOpenedDocument", document.uri.toString());

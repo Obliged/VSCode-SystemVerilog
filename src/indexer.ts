@@ -52,7 +52,7 @@ export class SystemVerilogIndexer {
         var cancelled = false;
         this.building = true;
         this.symbolsCount = 0;
-        this.statusbar.text = "SystemVerilog: Indexing.."
+        this.statusbar.text = "VHDL: Indexing.."
         const settings = workspace.getConfiguration();
         this.parallelProcessing = settings.get('systemverilog.parallelProcessing');
         this.forceFastIndexing = settings.get('systemverilog.forceFastIndexing');
@@ -63,7 +63,7 @@ export class SystemVerilogIndexer {
 
         return await window.withProgress({
             location: ProgressLocation.Notification,
-            title: "SystemVerilog Indexing...",
+            title: "VHDL Indexing...",
             cancellable: true
         }, async (_progress, token) => {
             this.symbols = new Map<string, Array<SystemVerilogSymbol>>();
@@ -84,9 +84,9 @@ export class SystemVerilogIndexer {
             this.building = false;
             console.timeEnd('build_index');
             if (cancelled) {
-                this.statusbar.text = "SystemVerilog: Indexing cancelled";
+                this.statusbar.text = "VHDL: Indexing cancelled";
             } else {
-                this.statusbar.text = 'SystemVerilog: ' + this.symbolsCount + ' indexed objects'
+                this.statusbar.text = 'VHDL: ' + this.symbolsCount + ' indexed objects'
             }
         });
     }
@@ -119,11 +119,11 @@ export class SystemVerilogIndexer {
                 }
                 this.symbols.set(uri.fsPath, output);
                 if (total_files == 0) { // If total files is 0, it is being used onChange
-                    this.statusbar.text = 'SystemVerilog: ' + this.symbolsCount + ' indexed objects';
+                    this.statusbar.text = 'VHDL: ' + this.symbolsCount + ' indexed objects';
                 }
             }
         }).catch((error) => {
-            this.outputChannel.appendLine("SystemVerilog: Indexing: Unable to process file: " + uri.toString());
+            this.outputChannel.appendLine("VHDL: Indexing: Unable to process file: " + uri.toString());
             this.outputChannel.appendLine(error);
             if (this.symbols.has(uri.fsPath)) {
                 this.symbolsCount -= this.symbols.get(uri.fsPath).length;
