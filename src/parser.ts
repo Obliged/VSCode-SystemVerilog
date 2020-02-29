@@ -12,12 +12,11 @@ export class SystemVerilogParser {
         ")",
         /((?<arch>\w+)\s+of\s+)?/,
         /(?<name>\w+)\s+/,
-        /(?=is)\s+/, 
-        /(?<params>generic\s*\([\w\W]*?\))?/,
-        /(?<ports>\s*port\s*\([\W\w]*?\))?/,
-        /\s*;/,
+        /is\s+/,
+        /(?<params>generic\s*\([\w\W]*?\)\s*;)?/,
+        /(?<ports>\s*port\s*\([\W\w]*?\))?\s*;/,
         /(?<body>[\W\w]*?)/,
-        /(?<end>end \1)/,
+        /(?<end>end\s+\1)/,
     ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mgi');
 
     private r_decl_method: RegExp = new RegExp([
@@ -77,14 +76,15 @@ export class SystemVerilogParser {
     private r_ports: RegExp = new RegExp([
         /(?<!^(?:--|\n).*?)/,
         "(?<=",
-        /(?<name>\b\w+\b)/,
-        /(?:\s*:\s*)/,
-        /(?:\b(?:in|out|inout|buffer|linkage)\b)\s*/,
-        /(?<type>(?:\w+)?\s*(\[.*?\])*?)?\s*/,
+        /(?<name>\b\w+\b)\s*/,
         // Allow multiple declaration
-        /(\b\w+\s*,\s*)*?/,
-        ")",
-        // Has to be followed by , or )
+        /(,\w+\s*)*?/,
+        /(?::\s*)/,
+        /(?:\b(?:in|out|inout|buffer|linkage)\b)\s*/,
+        /(?<type>(?:\w+\.)?\w+)\s*(\(\s+\w+\s+(downto|to)\s+\w+\s+\))\s*/,
+        /(?<val>:=\s*[\w"]+)?/,
+        ";)",
+        // Has to be followed by ; or )
         /(?=\s*((\[.*?\]\s*)*?|\/\/[^\n]*\s*)(?:;|\)))/
     ].map(x => (typeof x === 'string') ?  x : x.source).join(''), 'mgi');
 
